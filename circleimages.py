@@ -7,8 +7,6 @@ with open('labels.txt') as input:
     	line = line[:-1]
     	input_data.append(line.split(" "))
 
-print([len(d) for d in input_data])
-
 normal_info_size = 3
 cancer_info_size = 7
 for i in range(1, 323):
@@ -24,8 +22,10 @@ for i in range(1, 323):
 		y = height - int(image_info[5])
 		r = int(image_info[6])
 
+		image.draft("RGB", (width, height))
 		draw = ImageDraw.Draw(image)
-		draw.ellipse((x - r, y - r, x + r, y + r), None, (255, 0, 0, 0))
+		draw.ellipse((x - r, y - r, x + r, y + r), fill=None, outline="blue")
+
 
 		directory = "CIR/"
 		image.save(directory + name + ".png")
