@@ -1,0 +1,19 @@
+Goals for projects:
+
+* Understand TensorFlow
+    - Sessions?
+    - Interface with CNNs?
+    - Softmax?
+* Code
+    - How to convert our mammogram data into tensorflow compatible data?
+
+
+Deadlines:
+
+5 Page Slideshow, understand tensorflow/sessions: 04/12
+
+Have a working model by end of the weekend
+
+Project Presentations: 04/19
+
+Final report Due: 5/5
