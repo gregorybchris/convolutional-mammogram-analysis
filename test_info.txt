@@ -1,0 +1,50 @@
+Classes to train:
+
+All left
+All right
+Both left and right
+
+
+test with cross validation
+
+
+
+Description:
+
+Detailed Information
+
+The follow list gives the films in the MIAS database and provides appropriate details as follows:
+
+1st column:
+MIAS database reference number.
+2nd column:
+Character of background tissue:
+  F  Fatty
+  G  Fatty-glandular
+  D  Dense-glandular
+
+3rd column:
+Class of abnormality present:
+  CALC  Calcification
+  CIRC  Well-defined/circumscribed masses
+  SPIC  Spiculated masses
+  MISC  Other, ill-defined masses
+  ARCH  Architectural distortion
+  ASYM  Asymmetry
+  NORM  Normal
+
+4th column:
+Severity of abnormality;
+  B  Benign
+  M  Malignant
+
+5th, 6th columns:
+x,y image-coordinates of centre of abnormality.
+7th column:
+Approximate radius (in pixels) of a circle enclosing the abnormality.
+There are also several things you should note:
+
+The list is arranged in pairs of films, where each pair represents the left (even filename numbers) and right mammograms (odd filename numbers) of a single patient.
+The size of all the images is 1024 pixels x 1024 pixels. The images have been centered in the matrix.
+When calcifications are present, centre locations and radii apply to clusters rather than individual calcifications. Coordinate system origin is the bottom-left corner.
+In some cases calcifications are widely distributed throughout the image rather than concentrated at a single site. In these cases centre locations and radii are inappropriate and have been omitted.
