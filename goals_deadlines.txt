@@ -6,6 +6,7 @@ Goals for projects:
     - Softmax?
 * Code
     - How to convert our mammogram data into tensorflow compatible data?
+    - Numpy ndarray? how's that work?
 
 
 Deadlines:

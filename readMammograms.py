@@ -1,7 +1,7 @@
 from PIL import Image
 import csv
 import numpy as np
-
+from numpy import float32
 
 class mdata:
     def __init__(self, data, labels):
@@ -11,12 +11,12 @@ class mdata:
 
 
 def readData():
-
+    num_images = 2
     #read image pixel vals in
     fname = "UPNG/mdb"
     mgrams = []
 
-    for i in range(1,10):
+    for i in range(1,num_images):
         if i < 100:
             if i < 10:
                 name = fname + "00" + str(i) + ".png"
@@ -27,14 +27,17 @@ def readData():
 
         im = Image.open(name).load() #Can be many different formats.
 
-        pixels = []
-        for k in range(1024):
-            for j in range(1024):
-                pixels.append(im[k,j])
+        # pixels = []
+        # for k in range(1024):
+        #     for j in range(1024):
+        #         pixels.append(im[k,j])
 
-        mgrams.append(np.ndarray(shape=(1024,), buffer=np.array(pixels)))
-
-    mgrams = np.ndarray(shape=(1,), buffer=np.array(mgrams))
+        pixels = [im[k,j] for k in range(1024) for j in range(1024)]
+        # mgrams.append(np.ndarray(shape=(1024*1024,), buffer=np.array(pixels), dtype=int))
+        mgrams.append(pixels)
+    # print(len(mgrams))
+    # print(len(mgrams[0]))
+    mgrams = np.ndarray(shape=(num_images - 1,1024*1024), buffer=np.array(mgrams), dtype=float32)
 
         # print("read image %d" % i)
 
@@ -51,9 +54,9 @@ def readData():
         else:
             labels.append([0,0,1])
 
-    del labels[9:]
+    del labels[2:]
 
-    return mdata(mgrams, np.ndarray(shape=(1,), buffer=np.array(labels)))
+    return mdata(mgrams, np.ndarray(shape=(num_images - 1,3), buffer=np.array(labels), dtype=float32))
 
 
 
