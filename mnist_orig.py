@@ -26,34 +26,18 @@ from sklearn import metrics
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 import skflow
-import readMammograms
 
 ### Download and load MNIST data.
 
-mgrams = readMammograms.readData()
 mnist = input_data.read_data_sets('MNIST_data')
-print(type(mnist.train.images))
-print(type(mnist.train.images[0]))
-# print(len(mnist.train.images))
-# print(mnist.train.images[0])
-# print(len(mnist.train.images[0]))
-print(mnist.test.labels)
-
-print(type(mnist.train.labels[0]))
-
-mgrams = readMammograms.readData()
-# print(type(mgrams.data))
-# print((mgrams.labels[0]))
-
-# print(mgrams.labels[50])
 
 ### Linear classifier.
 
-# classifier = skflow.TensorFlowLinearClassifier(
-#     n_classes=10, batch_size=100, steps=1000, learning_rate=0.01)
-# classifier.fit(mnist.train.images, mnist.train.labels)
-# score = metrics.accuracy_score(mnist.test.labels, classifier.predict(mnist.test.images))
-# print('Accuracy: {0:f}'.format(score))
+classifier = skflow.TensorFlowLinearClassifier(
+    n_classes=10, batch_size=100, steps=1000, learning_rate=0.01)
+classifier.fit(mnist.train.images, mnist.train.labels)
+score = metrics.accuracy_score(mnist.test.labels, classifier.predict(mnist.test.images))
+print('Accuracy: {0:f}'.format(score))
 
 ### Convolutional network
 
@@ -64,7 +48,7 @@ def max_pool_2x2(tensor_in):
 def conv_model(X, y):
     # reshape X to 4d tensor with 2nd and 3rd dimensions being image width and height
     # final dimension being the number of color channels
-    X = tf.reshape(X, [-1, 1024, 1024, 1])
+    X = tf.reshape(X, [-1, 28, 28, 1])
     # first conv layer will compute 32 features for each 5x5 patch
     with tf.variable_scope('conv_layer1'):
         h_conv1 = skflow.ops.conv2d(X, n_filters=32, filter_shape=[5, 5],
@@ -76,16 +60,15 @@ def conv_model(X, y):
                                     bias=True, activation=tf.nn.relu)
         h_pool2 = max_pool_2x2(h_conv2)
         # reshape tensor into a batch of vectors
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 1024 * 1024 * 64])
+        h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
     # densely connected layer with 1024 neurons
-    # h_fc1 = skflow.ops.dnn(h_pool2_flat, [1024], activation=tf.nn.relu, dropout=0.5)
     h_fc1 = skflow.ops.dnn(h_pool2_flat, [1024], activation=tf.nn.relu)
     return skflow.models.logistic_regression(h_fc1, y)
 
 # Training and predicting
 classifier = skflow.TensorFlowEstimator(
-    model_fn=conv_model, n_classes=3, steps=1000, #number of steps
+    model_fn=conv_model, n_classes=10, batch_size=100, steps=20000,
     learning_rate=0.001)
-classifier.fit(mgrams.data, mgrams.labels)
-score = metrics.accuracy_score(mgrams.labels, classifier.predict(mgrams.data))
+classifier.fit(mnist.train.images, mnist.train.labels)
+score = metrics.accuracy_score(mnist.test.labels, classifier.predict(mnist.test.images))
 print('Accuracy: {0:f}'.format(score))

@@ -29,6 +29,6 @@ for i in range(1, 323):
 
 		directory = "CIR/"
 		image.save(directory + name + ".png")
-	
+
 	image.close()
-	
+

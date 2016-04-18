@@ -55,12 +55,12 @@ print(np.array_str(mgrams.data))
 #placeholder, ask Tensorflow to be able to input
 #any number of mammograms flattened into array of float32 of
 # size of 1024*1024
-x = tf.placeholder(tf.float32, shape=[None, 1024 * 1024])
+x = tf.placeholder(tf.float32, shape=[None, 100 * 100])
 y_ = tf.placeholder(tf.float32, shape=[None, 3])
 
 #model parameters
 #vector of 1024^2 -> 3 classes
-W = tf.Variable(tf.zeros([1024 * 1024, 3]))
+W = tf.Variable(tf.zeros([100 * 100, 3]))
 
 b = tf.Variable(tf.zeros([3]))
 
@@ -73,7 +73,7 @@ W_conv1 = weight_variable([5, 5, 1, 32])
 #bias vector
 b_conv1 = bias_variable([32])
 
-x_image = tf.reshape(x, [-1,1024,1024,1])
+x_image = tf.reshape(x, [-1,100,100,1])
 
 # convolve x_image with the weight tensor, add the bias, apply the ReLU function, and finally max pool
 h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
@@ -89,12 +89,12 @@ h_pool2 = max_pool_2x2(h_conv2)
 # Now that the image size has been reduced to 256x256, we add a fully-connected
 # layer with 1024 neurons to allow processing on the entire image. We reshape
 # the tensor from the pooling layer into a batch of vectors, multiply by a weight matrix, add a bias, and apply a ReLU.
-W_fc1 = weight_variable([256 * 256 * 64, 1024])
+W_fc1 = weight_variable([25 * 25 * 64, 1024])
 b_fc1 = bias_variable([1024])
 
 # Dropout layer to reduce overfitting
 # Probability that neuron's output is kept during dropout
-h_pool2_flat = tf.reshape(h_pool2, [-1, 256*256*64])
+h_pool2_flat = tf.reshape(h_pool2, [-1, 25*25*64])
 h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
 # Dropout Layer???
@@ -118,8 +118,7 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 sess.run(tf.initialize_all_variables())
 
 # for i in range(20000):
-for i in range(1):
-  print("let's train!")
+for i in range(100):
   batch = (mgrams.data, mgrams.labels)
   # if i%100 == 0:
   #   train_accuracy = accuracy.eval(feed_dict={x:batch[0], y_: batch[1], keep_prob: 1.0})
