@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw, ImageColor
 from math import floor
 
 input_data = []
-with open('labels.txt') as input:
+with open('labels.csv') as input:
     for line in input:
     	line = line[:-1]
     	input_data.append(line.split(" "))
@@ -27,7 +27,7 @@ for i in range(1, 323):
 		draw.ellipse((x - r, y - r, x + r, y + r), fill=None, outline="blue")
 
 
-		directory = "CIR/"
+		directory = "CIR_2/"
 		image.save(directory + name + ".png")
 
 	image.close()
