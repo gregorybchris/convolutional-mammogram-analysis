@@ -10,7 +10,7 @@ with open('labels.csv') as input:
 normal_info_size = 3
 cancer_info_size = 7
 for i in range(1, 323):
-	directory = "PNG/"
+	directory = "UPNG/"
 	name = "mdb" + str("0" * (3 - len(str(i)))) + str(i)
 	image = Image.open(directory + name + ".png")
 	width = image.width
@@ -25,7 +25,6 @@ for i in range(1, 323):
 		image.draft("RGB", (width, height))
 		draw = ImageDraw.Draw(image)
 		draw.ellipse((x - r, y - r, x + r, y + r), fill=None, outline="blue")
-
 
 		directory = "CIR_2/"
 		image.save(directory + name + ".png")
