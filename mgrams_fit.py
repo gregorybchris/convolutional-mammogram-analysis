@@ -28,10 +28,10 @@ from tensorflow.examples.tutorials.mnist import input_data
 import skflow
 import readMammograms
 import numpy
+import random
 
 ### Download and load MNIST data.
 
-mgrams = readMammograms.readData()
 # mnist = input_data.read_data_sets('MNIST_data')
 # print(type(mnist.train.images))
 # print(type(mnist.train.images[0]))
@@ -65,7 +65,7 @@ def max_pool_2x2(tensor_in):
 def conv_model(X, y):
     # reshape X to 4d tensor with 2nd and 3rd dimensions being image width and height
     # final dimension being the number of color channels
-    X = tf.reshape(X, [-1, 100, 100, 1])
+    X = tf.reshape(X, [-1, 48, 48, 1])
     # first conv layer will compute 32 features for each 5x5 patch
     with tf.variable_scope('conv_layer1'):
         h_conv1 = skflow.ops.conv2d(X, n_filters=32, filter_shape=[5, 5],
@@ -78,7 +78,7 @@ def conv_model(X, y):
         h_pool2 = max_pool_2x2(h_conv2)
         # reshape tensor into a batch of vectors
         # 25 * 25 after max pooling twice
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 25 * 25 * 64])
+        h_pool2_flat = tf.reshape(h_pool2, [-1, 12 * 12 * 64])
     # densely connected layer with 1024 neurons
     # h_fc1 = skflow.ops.dnn(h_pool2_flat, [1024], activation=tf.nn.relu, dropout=0.5)
     h_fc1 = skflow.ops.dnn(h_pool2_flat, [1024], activation=tf.nn.relu)
@@ -86,12 +86,26 @@ def conv_model(X, y):
 
 # Training and predicting
 classifier = skflow.TensorFlowEstimator(
-    model_fn=conv_model, n_classes=3, steps=100, #number of steps
+    model_fn=conv_model, n_classes=3, steps=1000, #number of steps
     learning_rate=0.001)
-classifier.fit(mgrams.data, mgrams.labels)
+
+training_data = mgrams.data[:int((9 * len(mgrams.data) / 10))]
+test_data = mgrams.data[int((9 * len(mgrams.data) / 10)):]
+training_labels = mgrams.labels[:int((9 * len(mgrams.data) / 10))]
+test_labels = mgrams.labels[int(9 * len(mgrams.data) / 10):]
+
+classifier.fit(training_data, training_labels)
 print("Fitted data")
-print(type(classifier.predict(mgrams.data)))
-print("Predicted Successfully")
-print(numpy.array_str(classifier.predict(mgrams.data)))
-score = metrics.accuracy_score(mgrams.labels, classifier.predict(mgrams.data))
+# print(type(classifier.predict(mgrams.data)))
+# print("Predicted Successfully")
+# print(numpy.array_str(classifier.predict(mgrams.data)))
+score = metrics.accuracy_score(test_labels, classifier.predict(test_data))
 print('Accuracy: {0:f}'.format(score))
+
+# classifier.fit(mgrams.data, mgrams.labels)
+# print("Fitted data")
+# # print(type(classifier.predict(mgrams.data)))
+# # print("Predicted Successfully")
+# # print(numpy.array_str(classifier.predict(mgrams.data)))
+# score = metrics.accuracy_score(mgrams.labels, classifier.predict(mgrams.data))
+# print('Accuracy: {0:f}'.format(score))

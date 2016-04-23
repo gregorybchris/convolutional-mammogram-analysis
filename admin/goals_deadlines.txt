@@ -1,0 +1,36 @@
+Goals for projects:
+
+4/23 TODO //////////////////////
+Understand Tensorflow code
+Understand CNN - convolution
+Understand Fully Connected NN - sigmoid function? dropout?
+Talk to the Google brain guy, prepare questions
+
+data:
+Fix the data set -
+    rotate? translate?
+    separate by calcification/growth?
+    100x100?
+    train by batch?
+    cross validation? need to change how data is formatted.
+
+
+
+* Understand TensorFlow
+    - Sessions?
+    - Interface with CNNs?
+    - Softmax?
+* Code
+    - How to convert our mammogram data into tensorflow compatible data?
+    - Numpy ndarray? how's that work?
+
+
+Deadlines:
+
+5 Page Slideshow, understand tensorflow/sessions: 04/12
+
+Have a working model by end of the weekend
+
+Project Presentations: 04/19
+
+Final report Due: 5/5
