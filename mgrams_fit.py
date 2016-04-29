@@ -27,8 +27,11 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 import skflow
 import readMammograms
-import numpy
+import numpy as np
+from numpy import float32
+from numpy import int64
 import random
+from sklearn.cross_validation import StratifiedKFold
 
 ### Download and load MNIST data.
 
@@ -42,7 +45,11 @@ import random
 
 # print(type(mnist.train.labels[0]))
 
-mgrams = readMammograms.readData()
+temp = readMammograms.readData()
+mgram_data = [temp.data[i] for i in range(len(temp.labels)) if temp.labels[i] == 1 or temp.labels[i] == 2]
+mgram_labels = [temp.labels[i] for i in range(len(temp.labels)) if temp.labels[i] == 1 or temp.labels[i] == 2]
+print (len(mgram_data))
+print(len(mgram_labels))
 # print(type(mgrams.data))
 # print((mgrams.labels[0]))
 
@@ -82,30 +89,57 @@ def conv_model(X, y):
     # densely connected layer with 1024 neurons
     # h_fc1 = skflow.ops.dnn(h_pool2_flat, [1024], activation=tf.nn.relu, dropout=0.5)
     h_fc1 = skflow.ops.dnn(h_pool2_flat, [1024], activation=tf.nn.relu)
-    return skflow.models.logistic_regression(h_fc1, y)
+    return skflow.models.logistic_regression(h_fc1, y) #softmax?
+
+# Prepare kfold training data splits
+skf = StratifiedKFold(mgram_labels, n_folds = 10, shuffle = True)
+training_data = []
+test_data  = []
+training_labels  = []
+test_labels   = []
+for train_indices, test_indices in skf:
+    print("Train len: ", len(train_indices), "Test len: ", len(test_indices))
+    train_batch = np.array([mgram_data[i] for i in train_indices])
+    train_label = np.array([mgram_labels[i] for i in train_indices])
+    test_batch = np.array([mgram_data[i] for i in test_indices])
+    test_label = np.array([mgram_labels[i] for i in test_indices])
+    # for index in train_index:
+    #     train_batch.append(mgrams.data[index])
+    #     train_label.append(mgrams.labels[index])
+    training_data.append(np.ndarray(shape=(len(train_indices),48*48), buffer=train_batch, dtype=float32))
+    training_labels.append(np.ndarray(shape=(len(train_indices),), buffer=train_label, dtype=int64))
+    test_data.append(np.ndarray(shape=(len(test_indices),48*48), buffer=test_batch, dtype=float32))
+    test_labels.append(np.ndarray(shape=(len(test_indices),), buffer=test_label, dtype=int64))
+
+avg_accuracy = 0.0
+
 
 # Training and predicting
 classifier = skflow.TensorFlowEstimator(
-    model_fn=conv_model, n_classes=3, steps=1000, #number of steps
+    model_fn=conv_model, n_classes=3, steps=1, #number of steps
     learning_rate=0.001)
 
-training_data = mgrams.data[:int((9 * len(mgrams.data) / 10))]
-test_data = mgrams.data[int((9 * len(mgrams.data) / 10)):]
-training_labels = mgrams.labels[:int((9 * len(mgrams.data) / 10))]
-test_labels = mgrams.labels[int(9 * len(mgrams.data) / 10):]
+# training_data = mgrams.data[:int((9 * len(mgrams.data) / 10))]
+# test_data = mgrams.data[int((9 * len(mgrams.data) / 10)):]
+# training_labels = mgrams.labels[:int((9 * len(mgrams.data) / 10))]
+# test_labels = mgrams.labels[int(9 * len(mgrams.data) / 10):]
 
-classifier.fit(training_data, training_labels)
-print("Fitted data")
-# print(type(classifier.predict(mgrams.data)))
-# print("Predicted Successfully")
-# print(numpy.array_str(classifier.predict(mgrams.data)))
-score = metrics.accuracy_score(test_labels, classifier.predict(test_data))
-print('Accuracy: {0:f}'.format(score))
+for i in range(10):
+    classifier.fit(training_data[i], training_labels[i])
+    print("Fitted data")
+    results = classifier.predict(test_data[i])
+    print("Test labels")
+    print(test_labels[i])
+    print("Results:")
+    print (results, "\n")
+    accuracy = metrics.accuracy_score(test_labels[i], results)
+    print('Accuracy: {0:f}'.format(accuracy))
+    avg_accuracy += accuracy
+    # precision = metrics.precision_score(test_labels[i], results)
+    # print('Precision: {0:f}'.format(precision))
+    # recall = metrics.recall_score(test_labels[i], results)
+    # print('Recall: {0:f}'.format(recall))
 
-# classifier.fit(mgrams.data, mgrams.labels)
-# print("Fitted data")
-# # print(type(classifier.predict(mgrams.data)))
-# # print("Predicted Successfully")
-# # print(numpy.array_str(classifier.predict(mgrams.data)))
-# score = metrics.accuracy_score(mgrams.labels, classifier.predict(mgrams.data))
-# print('Accuracy: {0:f}'.format(score))
+
+print("Average Accuracy: ", avg_accuracy / 10, "\n")
+print("Finished")
