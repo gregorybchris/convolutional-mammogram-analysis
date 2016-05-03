@@ -68,24 +68,40 @@ print("Mammogram data loaded.\n")
 Convolutional Network Model
 
 """
+### GLOBAL CONSTANTS
 
+POOLING_X_DIM = 2
+POOLING_Y_DIM = 2
+IMAGE_X_DIM = 48
+IMAGE_Y_DIM = 48
+FEATURES_LAYER_1 = 32
+FEATURES_LAYER_2 = 64
+KERNEL_LAYER_1 = 5
+KERNEL_LAYER_2 = 5
+NUM_LAYERS = 2
+NUM_FOLDS = 9
+NUM_CLASSES = 3
+NUM_STEPS = 500
+LEARN_RATE = .005
 
+### Convolutional network
+##############################################################################
 def max_pool_2x2(tensor_in):
-    return tf.nn.max_pool(tensor_in, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
+    return tf.nn.max_pool(tensor_in, ksize=[1, POOLING_X_DIM, POOLING_Y_DIM, 1], strides=[1, POOLING_X_DIM, POOLING_Y_DIM, 1],
         padding='SAME')
 
 def conv_model(X, y):
     # reshape X to 4d tensor with 2nd and 3rd dimensions being image width and height
     # final dimension being the number of color channels
-    X = tf.reshape(X, [-1, 48, 48, 1])
+    X = tf.reshape(X, [-1, IMAGE_X_DIM, IMAGE_Y_DIM, 1])
     # first conv layer will compute 32 features for each 5x5 patch
     with tf.variable_scope('conv_layer1'):
-        h_conv1 = skflow.ops.conv2d(X, n_filters=32, filter_shape=[5, 5],
+        h_conv1 = skflow.ops.conv2d(X, n_filters=FEATURES_LAYER_1, filter_shape=[KERNEL_LAYER_1, KERNEL_LAYER_1],
                                     bias=True, activation=tf.nn.relu)
         h_pool1 = max_pool_2x2(h_conv1)
     # second conv layer will compute 64 features for each 5x5 patch
     with tf.variable_scope('conv_layer2'):
-        h_conv2 = skflow.ops.conv2d(h_pool1, n_filters=64, filter_shape=[5, 5],
+        h_conv2 = skflow.ops.conv2d(h_pool1, n_filters=FEATURES_LAYER_2, filter_shape=[KERNEL_LAYER_2, KERNEL_LAYER_2],
                                     bias=True, activation=tf.nn.relu)
         h_pool2 = max_pool_2x2(h_conv2)
         # reshape tensor into a batch of vectors
@@ -95,6 +111,13 @@ def conv_model(X, y):
         h_fc1 = skflow.ops.dnn(h_pool2_flat, [1024], activation=tf.nn.relu, keep_prob=0.5)
         #  """DNN with 64,128,64 hidden layers, and dropout of 0.5 probability."""
         # h_fc1 = skflow.ops.dnn(h_pool2_flat, [64,128,64], activation=tf.nn.relu, keep_prob=0.5)
+
+    # Chris's
+    #     h_pool2_flat = tf.reshape(h_pool2, [-1, int(IMAGE_X_DIM / (POOLING_X_DIM * POOLING_Y_DIM) * IMAGE_Y_DIM / (POOLING_X_DIM * POOLING_Y_DIM) * 64)])
+    # # densely connected layer with 1024 neurons
+    # # h_fc1 = skflow.ops.dnn(h_pool2_flat, [1024], activation=tf.nn.relu, dropout=0.5)
+    # h_fc1 = skflow.ops.dnn(h_pool2_flat, [FEATURES_LAYER_1 * FEATURES_LAYER_2 / 2], activation=tf.nn.relu)
+
 
     return skflow.models.logistic_regression(h_fc1, y) #softmax?
 
@@ -107,7 +130,7 @@ Prepare kfold training data splits
 
 folds = 8
 print("Performing ", folds, "-fold validation")
-skf = StratifiedKFold(mgram_labels, n_folds = folds, shuffle = True)
+skf = StratifiedKFold(mgram_labels, n_folds = NUM_FOLDS, shuffle = True)
 training_data    = []
 test_data        = []
 training_labels  = []
@@ -126,9 +149,9 @@ for train_indices, test_indices in skf:
     #     train_batch.append(mgrams.data[index])
     #     train_label.append(mgrams.labels[index])
 
-    training_data.append(np.ndarray(shape=(len(train_indices),48*48), dtype=float32))
+    training_data.append(np.ndarray(shape=(len(train_indices),IMAGE_X_DIM*IMAGE_Y_DIM), dtype=float32))
     training_labels.append(np.ndarray(shape=(len(train_indices),), dtype=uint8))
-    test_data.append(np.ndarray(shape=(len(test_indices),48*48), dtype=float32))
+    test_data.append(np.ndarray(shape=(len(test_indices),IMAGE_X_DIM*IMAGE_Y_DIM), dtype=float32))
     test_labels.append(np.ndarray(shape=(len(test_indices),), dtype=uint8))
 
     for j in range(len(train_indices)):
@@ -152,10 +175,10 @@ lr    = 0.003
 steps = 5000
 
 classifier = skflow.TensorFlowEstimator(
-    model_fn=conv_model, n_classes=3, steps=steps, #number of steps
-    learning_rate=lr)
+    model_fn=conv_model, n_classes=NUM_CLASSES, steps=NUM_STEPS, #number of steps
+    learning_rate=LEARN_RATE)
 
-print("Training convolutional NN with ", steps, " steps with ", lr, " learning rate.")
+print("Training convolutional NN with ", NUM_STEPS, " steps with ", LEARN_RATE, " learning rate.")
 i = 0
 classifier.fit(training_data[i], training_labels[i])
 print("Fitted data")
@@ -172,7 +195,6 @@ print("\nTraining Predicted labels:")
 print (training_results, "\n")
 # Accuracy
 accuracy = metrics.accuracy_score(test_labels[i], results)
-
 print("Printing metrics ================")
 print('Accuracy          : {0:f}'.format(accuracy))
 print('Training Accuracy : {0:f}'.format(training_accuracy))
