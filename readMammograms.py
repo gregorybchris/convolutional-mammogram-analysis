@@ -15,10 +15,10 @@ class mdata:
         self.malignant = m
 
 def readData():
-    f=open("data/reduced_labels.csv")
+    f=open("data/all_augmented/labels_augmented.csv")
     labels = []
     mgrams = []
-    fname = "data/combined_set_52/"
+    fname = "data/all_augmented/"
     n = 0
     b = 0
     m = 0
@@ -34,7 +34,7 @@ def readData():
             m += 1
         #read image pixel vals in
         name = row[0]
-        name = fname + name + ".png" #.../mdbXYZ.png
+        name = fname + name #.../mdbXYZ.png
         # print("Reading in: ", name)
         # for i in range(1,num_images):
         #     if i < 33 or i > 57 or i < 291 or i > 311: #ignored

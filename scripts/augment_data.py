@@ -2,15 +2,16 @@ from PIL import Image
 import csv
 
 # def readData():
-f=open("../data/labels.csv")
+f=open("../data/labels_all_masses.csv")
 fname = "../data/combined_set_52/"
-targ_name = "../data/augmented_data/"
-label_file = open('../data/labels_augmented.csv', 'w')
+targ_name = "../data/all_mass_augmented/"
+label_file = open('../data/all_mass_augmented/labels_all_calc_augmented.csv', 'w')
 for row in csv.reader(f, delimiter=' '):
     name = row[0]
     read_name = fname + name + ".png"
     image = Image.open(read_name)
     image.save(targ_name + name + ".png")
+    row[0] = name + ".png"
     label_file.write(' '.join(row))
     label_file.write('\n')
     image.rotate(90).save(targ_name + name + "_r90.png")

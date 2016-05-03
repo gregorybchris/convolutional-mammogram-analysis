@@ -81,7 +81,7 @@ KERNEL_LAYER_2 = 5
 NUM_LAYERS = 2
 NUM_FOLDS = 9
 NUM_CLASSES = 3
-NUM_STEPS = 500
+NUM_STEPS = 1
 LEARN_RATE = .005
 
 ### Convolutional network
@@ -206,4 +206,4 @@ recall = metrics.recall_score(test_labels[i], results, labels=[2])       #only c
 print('Recall            : {0:f}'.format(recall))
 f1_score = metrics.f1_score(test_labels[i], results, labels=[2])
 print('F1 Score          : {0:f}'.format(f1_score))
-print("Finished.")
+print("Finished.\n")
