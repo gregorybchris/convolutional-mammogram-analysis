@@ -22,6 +22,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import sys
 from sklearn import metrics
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
@@ -50,8 +51,10 @@ from sklearn.cross_validation import StratifiedKFold
 Load mammogram data
 
 """
+test_number = int(sys.argv[1])
+
 print("Loading in Mammogram data...")
-mgrams = readMammograms.readData()
+mgrams = readMammograms.readData(test_number)
 mgram_data = mgrams.data
 mgram_labels = mgrams.labels
 print("Mammogram data loaded.\n")
@@ -79,10 +82,13 @@ FEATURES_LAYER_2 = 64
 KERNEL_LAYER_1 = 5
 KERNEL_LAYER_2 = 5
 NUM_LAYERS = 2
-NUM_FOLDS = 9
-NUM_CLASSES = 3
-NUM_STEPS = 1
-LEARN_RATE = .005
+NUM_FOLDS = 8
+if test_number == 2:
+    NUM_CLASSES = 3
+else:
+    NUM_CLASSES = 2
+NUM_STEPS = 10000
+LEARN_RATE = .003
 
 ### Convolutional network
 ##############################################################################
@@ -136,6 +142,7 @@ test_data        = []
 training_labels  = []
 test_labels      = []
 i = 0
+delta = -1
 for train_indices, test_indices in skf:
     # print("Train len: ", len(train_indices), "Test len: ", len(test_indices))
     train_batch = np.array([mgram_data[i] for i in train_indices])
@@ -154,11 +161,14 @@ for train_indices, test_indices in skf:
     test_data.append(np.ndarray(shape=(len(test_indices),IMAGE_X_DIM*IMAGE_Y_DIM), dtype=float32))
     test_labels.append(np.ndarray(shape=(len(test_indices),), dtype=uint8))
 
+    if NUM_CLASSES == 3:
+        delta = 0
+
     for j in range(len(train_indices)):
-        training_labels[i][j] = train_label[j]
+        training_labels[i][j] = train_label[j] + delta
         training_data[i][j] = train_batch[j]
     for j in range(len(test_indices)):
-        test_labels[i][j] = test_label[j]
+        test_labels[i][j] = test_label[j] + delta
         test_data[i][j]   = test_batch[j]
     i += 1
 
@@ -207,3 +217,8 @@ print('Recall            : {0:f}'.format(recall))
 f1_score = metrics.f1_score(test_labels[i], results, labels=[2])
 print('F1 Score          : {0:f}'.format(f1_score))
 print("Finished.\n")
+
+# summary_op = tf.merge_all_summaries()
+# summary_writer = tf.train.SummaryWriter("test/")
+# summary_str = sess.run(summary_op, feed_dict=feed_dict)
+# summary_writer.add_summary(summary_str, step)
