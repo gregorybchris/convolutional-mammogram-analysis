@@ -14,11 +14,24 @@ class mdata:
         self.benign    = b
         self.malignant = m
 
-def readData():
-    f=open("data/all_augmented/labels_augmented.csv")
+def readData(test_num):
+    if test_num == 0:
+        print("Testing all masses augmented")
+        handle = "data/all_mass_augmented/labels_all_mass_augmented.csv"
+        fname = "data/all_mass_augmented/"
+    elif test_num == 1:
+        print("Testing all calcifications augmented")
+        handle = "data/all_calcifications_augmented/labels_all_calc_augmented.csv"
+        fname = "data/all_calcifications_augmented/"
+    else:
+        print("Testing all mammograms augmented")
+        handle = "data/all_augmented/labels_augmented.csv"
+        fname = "data/all_augmented/"
+
+
+    f=open(handle)
     labels = []
     mgrams = []
-    fname = "data/all_augmented/"
     n = 0
     b = 0
     m = 0
