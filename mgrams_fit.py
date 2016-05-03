@@ -35,43 +35,26 @@ from sklearn.cross_validation import StratifiedKFold
 
 ### Download and load MNIST data.
 
-mnist = input_data.read_data_sets('MNIST_data')
-# print(type(mnist.train.images))
-# print(type(mnist.train.images[0]))
-# print(len(mnist.train.images))
-# print(mnist.train.images[0])
-# print(len(mnist.train.images[0]))
-# print(mnist.test.labels)
-# print(type(mnist.train.labels[0]))
-# print(type(mnist.train.images[0][0]))
-# print(mnist.train.images[0])
+# mnist = input_data.read_data_sets('MNIST_data')
+# # print(type(mnist.train.images))
+# # print(type(mnist.train.images[0]))
+# # print(len(mnist.train.images))
+# # print(mnist.train.images[0])
+# # print(len(mnist.train.images[0]))
+# # print(mnist.test.labels)
+# # print(type(mnist.train.labels[0]))
+# # print(type(mnist.train.images[0][0]))
+# # print(mnist.train.images[0])
+##############################################################################
+"""
+Load mammogram data
 
-temp = readMammograms.readData()
-mgram_data = temp.data
-mgram_labels = temp.labels
-# mgram_data = []
-# mgram_labels = []
-# white = [255 for i in range(48*48)]
-# black = [0 for i in range(48*48)]
-
-# for i in range(50):
-#     mgram_data.append(black)
-# for i in range(50):
-#     mgram_data.append(white)
-
-# mgram_labels = [0 for i in range(50)]
-# for i in range(50):
-#     mgram_labels.append(1)
-
-# mgram_data = [temp.data[i] for i in range(len(temp.labels)) if temp.labels[i] == 1 or temp.labels[i] == 2]
-# mgram_labels = [temp.labels[i] for i in range(len(temp.labels)) if temp.labels[i] == 1 or temp.labels[i] == 2]
-# print (len(mgram_data))
-# print(len(mgram_labels))
-# print(type(mgrams.data))
-# print((mgrams.labels[0]))
-
-# print(mgrams.labels[50])
-
+"""
+print("Loading in Mammogram data...")
+mgrams = readMammograms.readData()
+mgram_data = mgrams.data
+mgram_labels = mgrams.labels
+print("Mammogram data loaded.\n")
 ### Linear classifier.
 
 # classifier = skflow.TensorFlowLinearClassifier(
@@ -80,7 +63,12 @@ mgram_labels = temp.labels
 # score = metrics.accuracy_score(mnist.test.labels, classifier.predict(mnist.test.images))
 # print('Accuracy: {0:f}'.format(score))
 
-### Convolutional network
+##############################################################################
+"""
+Convolutional Network Model
+
+"""
+
 
 def max_pool_2x2(tensor_in):
     return tf.nn.max_pool(tensor_in, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
@@ -103,18 +91,27 @@ def conv_model(X, y):
         # reshape tensor into a batch of vectors
         # 25 * 25 after max pooling twice
         h_pool2_flat = tf.reshape(h_pool2, [-1, 12 * 12 * 64])
-    # densely connected layer with 1024 neurons
-    # h_fc1 = skflow.ops.dnn(h_pool2_flat, [1024], activation=tf.nn.relu, dropout=0.5)
-    h_fc1 = skflow.ops.dnn(h_pool2_flat, [1024], activation=tf.nn.relu)
+        #DNN with 1024 hidden layers, and dropout of 0.5 probability.
+        h_fc1 = skflow.ops.dnn(h_pool2_flat, [1024], activation=tf.nn.relu, keep_prob=0.5)
+        #  """DNN with 64,128,64 hidden layers, and dropout of 0.5 probability."""
+        # h_fc1 = skflow.ops.dnn(h_pool2_flat, [64,128,64], activation=tf.nn.relu, keep_prob=0.5)
+
     return skflow.models.logistic_regression(h_fc1, y) #softmax?
 
-# Prepare kfold training data splits
-print(mgram_labels)
-skf = StratifiedKFold(mgram_labels, n_folds = 9, shuffle = True)
-training_data = []
-test_data  = []
+
+##############################################################################
+"""
+Prepare kfold training data splits
+
+"""
+
+folds = 8
+print("Performing ", folds, "-fold validation")
+skf = StratifiedKFold(mgram_labels, n_folds = folds, shuffle = True)
+training_data    = []
+test_data        = []
 training_labels  = []
-test_labels   = []
+test_labels      = []
 i = 0
 for train_indices, test_indices in skf:
     # print("Train len: ", len(train_indices), "Test len: ", len(test_indices))
@@ -122,9 +119,9 @@ for train_indices, test_indices in skf:
     train_label = np.array([mgram_labels[i] for i in train_indices])
     test_batch = np.array([mgram_data[i] for i in test_indices])
     test_label = np.array([mgram_labels[i] for i in test_indices])
-    if i == 0:
-        print(train_label)
-        print(test_label)
+    # if i == 0:
+    #     print(train_label)
+    #     print(test_label)
     # for index in train_index:
     #     train_batch.append(mgrams.data[index])
     #     train_label.append(mgrams.labels[index])
@@ -142,36 +139,49 @@ for train_indices, test_indices in skf:
         test_data[i][j]   = test_batch[j]
     i += 1
 
-print(training_data[0])
-print(len(test_data[0]))
+print(folds, "-fold validation prepared.\n")
 
 
-avg_accuracy = 0.0
+##############################################################################
+"""
+Train and test model
 
+"""
 
-# Training and predicting
+lr    = 0.003
+steps = 5000
+
 classifier = skflow.TensorFlowEstimator(
-    model_fn=conv_model, n_classes=3, steps=5000, #number of steps
-    learning_rate=0.005)
+    model_fn=conv_model, n_classes=3, steps=steps, #number of steps
+    learning_rate=lr)
 
-# training_data = mgrams.data[:int((9 * len(mgrams.data) / 10))]
-# test_data = mgrams.data[int((9 * len(mgrams.data) / 10)):]
-# training_labels = mgrams.labels[:int((9 * len(mgrams.data) / 10))]
-# test_labels = mgrams.labels[int(9 * len(mgrams.data) / 10):]
+print("Training convolutional NN with ", steps, " steps with ", lr, " learning rate.")
 i = 0
 classifier.fit(training_data[i], training_labels[i])
 print("Fitted data")
 results = classifier.predict(test_data[i])
-print("Test labels")
+print("Expected labels:                 (0 = Normal, 1 = Benign, 2 = Cancerous)")
 print(test_labels[i])
-print("Results:")
-print (results, "\n")
+print("\nPredicted labels:")
+print (results)
+
+# Training Accuracy (check for overfitting)
+training_results = classifier.predict(training_data[i])
+training_accuracy = metrics.accuracy_score(training_labels[i], training_results)
+print("\nTraining Predicted labels:")
+print (training_results, "\n")
+# Accuracy
 accuracy = metrics.accuracy_score(test_labels[i], results)
-print('Accuracy: {0:f}'.format(accuracy))
-avg_accuracy += accuracy
-precision = metrics.precision_score(test_labels[i], results)
-print('Precision: {0:f}'.format(precision))
-recall = metrics.recall_score(test_labels[i], results)
-print('Recall: {0:f}'.format(recall))
-print("Average Accuracy: ", avg_accuracy / 10, "\n")
-print("Finished")
+
+print("Printing metrics ================")
+print('Accuracy          : {0:f}'.format(accuracy))
+print('Training Accuracy : {0:f}'.format(training_accuracy))
+# Precision
+precision = metrics.precision_score(test_labels[i], results, labels=[2]) #only calculate for malignant case
+print('Precision         : {0:f}'.format(precision))
+# Recall ***
+recall = metrics.recall_score(test_labels[i], results, labels=[2])       #only calculate for malignant case
+print('Recall            : {0:f}'.format(recall))
+f1_score = metrics.f1_score(test_labels[i], results, labels=[2])
+print('F1 Score          : {0:f}'.format(f1_score))
+print("Finished.")
